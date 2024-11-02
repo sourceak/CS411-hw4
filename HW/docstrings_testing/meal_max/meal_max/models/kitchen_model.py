@@ -7,6 +7,7 @@ from typing import Any
 from meal_max.utils.sql_utils import get_db_connection
 from meal_max.utils.logger import configure_logger
 
+#Commment for commiting 
 
 logger = logging.getLogger(__name__)
 configure_logger(logger)
