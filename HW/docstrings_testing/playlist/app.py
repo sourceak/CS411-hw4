@@ -20,6 +20,10 @@ playlist_model = PlaylistModel()
 #
 ####################################################
 
+@app.route('/')
+def home():
+    return {"wassssuuuuuupppp!"}
+
 @app.route('/api/health', methods=['GET'])
 def healthcheck() -> Response:
     """
