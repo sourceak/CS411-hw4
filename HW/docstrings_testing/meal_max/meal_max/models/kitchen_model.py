@@ -7,6 +7,7 @@ from typing import Any
 from meal_max.utils.sql_utils import get_db_connection
 from meal_max.utils.logger import configure_logger
 
+#Commment for commiting 
 
 logger = logging.getLogger(__name__)
 configure_logger(logger)
@@ -28,6 +29,25 @@ class Meal:
 
 
 def create_meal(meal: str, cuisine: str, price: float, difficulty: str) -> None:
+    """
+    create_meal: creates a new meal, specifying its name, cuisine type, price, and difficulty to make, 
+        that then gets logged into the database. 
+
+    Args:
+        meal: a string, containing the name of the meal
+        cuisine: a string, containing the type of cuisine 
+        price: a float, specifying the cost of the meal 
+        difficulty: a string, indicating the difficulty to make the meal
+
+    Returns:
+        None
+        
+    Raises: 
+        ValueError: If price is a negative number 
+        ValueError: If difficulty is not 'LOW', 'MED', or 'HIGH' 
+        ValueError: If the meal inputted already exists 
+        sqlite3.Error: If any database error occurs   
+    """
     if not isinstance(price, (int, float)) or price <= 0:
         raise ValueError(f"Invalid price: {price}. Price must be a positive number.")
     if difficulty not in ['LOW', 'MED', 'HIGH']:
@@ -54,7 +74,13 @@ def create_meal(meal: str, cuisine: str, price: float, difficulty: str) -> None:
 
 def clear_meals() -> None:
     """
-    Recreates the meals table, effectively deleting all meals.
+    clear_meals: Recreates the meals table, effectively deleting all meals.
+
+    Args:
+        None
+
+    Returns:
+        None
 
     Raises:
         sqlite3.Error: If any database error occurs.
@@ -74,6 +100,20 @@ def clear_meals() -> None:
         raise e
 
 def delete_meal(meal_id: int) -> None:
+    """
+    delete_meal: deletes a specified meal from the meal table 
+
+    Args:
+        meal_id: an int, specifying the id of the meal 
+
+    Returns: 
+        None
+
+    Raises:  
+        ValueError: If you try to delete a meal that has already been deleted 
+        ValueError: If you try to delete a meal that doesn't exist in the meal table
+        sqlite3.Error: If any database error occurs
+    """
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
@@ -96,7 +136,22 @@ def delete_meal(meal_id: int) -> None:
         logger.error("Database error: %s", str(e))
         raise e
 
-def get_leaderboard(sort_by: str="wins") -> dict[str, Any]:
+def get_leaderboard(sort_by: str="wins") -> dict[str, Any]: 
+    """
+    get_leaderboard: retrieves a leaderboard of meals, ranked by either wins or win percentages
+
+    Args:
+        sort_by: a string, that determines how we sort the leaderboard. 
+            By default sort_by = "wins", but the other option is "win_pct" 
+    
+    Returns:
+        dict: a dictionary of strings that correspond to the statistics/information of a meal 
+
+    Raises:
+        ValueError: If sort_by is not "win_pct" or "wins"
+        sqlite3.Error: If a database error occurs
+    """
+
     query = """
         SELECT id, meal, cuisine, price, difficulty, battles, wins, (wins * 1.0 / battles) AS win_pct
         FROM meals WHERE deleted = false AND battles > 0
@@ -138,6 +193,21 @@ def get_leaderboard(sort_by: str="wins") -> dict[str, Any]:
         raise e
 
 def get_meal_by_id(meal_id: int) -> Meal:
+    """
+    get_meal_by_id: returns a meal from the database using its id 
+
+    Args:
+        meal_id: an int that corresponds to a meal's id number
+
+    Returns:
+        Meal: An instance of the `Meal` class representing the meal's details, 
+            including id, name, cuisine type, price, and difficulty level
+
+    Raises:
+        ValueError: If the meal with the id has been deleted
+        ValueError: If the meal with the id does not exist in the database
+        sqlite3.Error: If any database error occurs 
+    """
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
@@ -159,6 +229,21 @@ def get_meal_by_id(meal_id: int) -> Meal:
 
 
 def get_meal_by_name(meal_name: str) -> Meal:
+    """
+    get_meal_by_name: returns a meal from the database using its name 
+
+    Args:
+        meal_name: a string, that indicates the meal's name 
+
+    Returns: 
+        Meal: An instance of the `Meal` class representing the meal's details, 
+            including id, name, cuisine type, price, and difficulty level
+
+    Raises:
+        ValueError: If the meal with the same name has been deleted
+        ValueError: If the meal with the same name does not exist in the database
+        sqlite3.Error: If a database error occurs 
+    """
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
@@ -180,6 +265,22 @@ def get_meal_by_name(meal_name: str) -> Meal:
 
 
 def update_meal_stats(meal_id: int, result: str) -> None:
+    """
+    update_meal_stats: updates the win/loss status of a win
+
+    Args:
+        meal_id: an integer that represents the meal we are updating
+        result: a string, either "win" or "loss" 
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: If the meal with the meal_id has been deleted
+        ValueError: If the meal with the meal_id does not exist in the database 
+        ValueError: If result is not "win" or "loss"
+        sqlite3.Error: If a database error occurs
+    """
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
