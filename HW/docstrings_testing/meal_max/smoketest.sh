@@ -124,6 +124,22 @@ get_meal_by_name(){
 
 }
 
+get_leaderboard() {
+  sort_by=$1
+  echo "Getting meal leaderboard sorted by $sort_by..."
+  response=$(curl -s -X GET "$BASE_URL/leaderboard?sort=$sort_by")
+  if echo "$response" | grep -q '"status": "success"'; then
+    echo "Meal leaderboard retrieved successfully (sorted by $sort_by)."
+    if [ "$ECHO_JSON" = true ]; then
+      echo "Leaderboard JSON (sorted by $sort_by):"
+      echo "$response" | jq .
+    fi
+  else
+    echo "Failed to get meal leaderboard."
+    exit 1
+  fi
+}
+
 check_health
 check_db
 
@@ -136,6 +152,7 @@ create_meal burger american 8.0 MED
 delete_meal_by_id 1
 get_meal_by_id 2
 get_meal_by_name curry
+get_leaderboard wins
 
 echo "COMPLETED ALL KITCHEN MODEL TESTS"
 
