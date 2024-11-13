@@ -157,3 +157,124 @@ get_leaderboard wins
 echo "COMPLETED ALL KITCHEN MODEL TESTS"
 
 
+###############################################
+#
+# Meal Management
+#
+###############################################
+
+clear_catalog() {
+  echo "Clearing the meal catalog..."
+  curl -s -X DELETE "$BASE_URL/clear-catalog" | grep -q '"status": "success"'
+}
+
+create_meal() {
+  meal=$1
+  cuisine=$2
+  price=$3
+  difficulty=$4
+
+  echo "Adding meal ($meal, $cuisine, $price, $difficulty) to the catalog..."
+  curl -s -X POST "$BASE_URL/create-meal" -H "Content-Type: application/json" \
+    -d "{\"meal\":\"$meal\", \"cuisine\":\"$cuisine\", \"price\":$price, \"difficulty\":\"$difficulty\"}" | grep -q '"status": "success"'
+
+  if [ $? -eq 0 ]; then
+    echo "Meal added successfully."
+  else
+    echo "Failed to add meal."
+    exit 1
+  fi
+}
+
+delete_meal_by_id() {
+  meal_id=$1
+
+  echo "Deleting meal by ID ($meal_id)..."
+  response=$(curl -s -X DELETE "$BASE_URL/delete-meal/$meal_id")
+  if echo "$response" | grep -q '"status": "success"'; then
+    echo "Meal deleted successfully by ID ($meal_id)."
+  else
+    echo "Failed to delete meal by ID ($meal_id)."
+    exit 1
+  fi
+}
+
+get_meal_by_id() {
+  meal_id=$1
+
+  echo "Getting meal by ID ($meal_id)..."
+  response=$(curl -s -X GET "$BASE_URL/get-meal-by-id/$meal_id")
+  if echo "$response" | grep -q '"status": "success"'; then
+    echo "Meal retrieved successfully by ID ($meal_id)."
+    if [ "$ECHO_JSON" = true ]; then
+      echo "Meal JSON (ID $meal_id):"
+      echo "$response" | jq .
+    fi
+  else
+    echo "Failed to get meal by ID ($meal_id)."
+    exit 1
+  fi
+}
+
+get_meal_by_name() {
+  meal_name=$1
+
+  echo "Getting meal by name ($meal_name)..."
+  response=$(curl -s -X GET "$BASE_URL/get-meal-by-name/$meal_name")
+  if echo "$response" | grep -q '"status": "success"'; then
+    echo "Meal retrieved successfully by name ($meal_name)."
+    if [ "$ECHO_JSON" = true ]; then
+      echo "Meal JSON (name: $meal_name):"
+      echo "$response" | jq .
+    fi
+  else
+    echo "Failed to get meal by name ($meal_name)."
+    exit 1
+  fi
+}
+
+get_leaderboard() {
+  sort_by=$1
+  echo "Getting meal leaderboard sorted by $sort_by..."
+  response=$(curl -s -X GET "$BASE_URL/leaderboard?sort=$sort_by")
+  if echo "$response" | grep -q '"status": "success"'; then
+    echo "Meal leaderboard retrieved successfully (sorted by $sort_by)."
+    if [ "$ECHO_JSON" = true ]; then
+      echo "Leaderboard JSON (sorted by $sort_by):"
+      echo "$response" | jq .
+    fi
+  else
+    echo "Failed to get meal leaderboard."
+    exit 1
+  fi
+}
+
+echo "**BEGINNING BATTLE MODEL FUNCTION TESTS**"
+# Clear the catalog
+clear_catalog
+
+# Create meals
+create_meal "Pasta" "Italian" 5.0 "LOW"
+create_meal "Curry" "Indian" 10.0 "MED"
+create_meal "Burger" "American" 8.0 "HIGH"
+
+# Delete a meal by ID
+delete_meal_by_id 1
+
+# Get meals by ID and name
+get_meal_by_id 2
+get_meal_by_name "Curry"
+
+# Get meal leaderboard
+get_leaderboard "wins"
+
+echo "All meal management smoketests completed successfully!"
+
+
+
+
+
+
+
+
+
